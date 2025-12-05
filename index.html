@@ -317,7 +317,6 @@ td {
 .total-positive { color: #a8e6a8; font-weight: 700; }
 .total-negative { color: #ff8a80; font-weight: 700; }
 
-/* ========================= ANIMATIONS ========================= */
 @keyframes rotateRing { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes stablePulse {
   0%,100% { box-shadow: 0 0 50px rgba(201,165,116,0.5), inset 0 0 30px rgba(255,255,255,0.1); }
@@ -413,28 +412,9 @@ td {
 </div>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxuYfx40BopDL4xhK1hWRADSmiJM8NzyfoiPU5kr9xtrH_KWj47HVt65PWrZTeChMWg/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxC06GlxFqVYDMX7Tfjxyx-nbUYwIEL5fu0CDy3RjEydqco8lV-bEpmiDHKK3guf_yt/exec";
 
-const NAMES = [
-  "Burhanuddin ali mohammad bhai Bazar", "Abdulkadir M. Mustafa Bhai Hamid",
-  "Taher Aliasger Bhai Musaji", "Mustafa Yusuf Bhai Dawoodi",
-  "Mufaddal mustansir bhai rangwala", "Husain Murtaza bhai Ahemadabad",
-  "Shabbir Habib Bhai Jalali", "Taher Dawood Bhai Suksar",
-  "Mohammed Shk Huzaifa Shakir", "Burhanuddin Shabbir Bhai Sabunwala",
-  "Adnan Juzer Bhai Banswadi", "Aziz Husain Saeed Abbas Bhai Saghar",
-  "Burahanuddin hussain bhai chittalwala", "Husain mohammad bhai bootwala",
-  "Mohammed Burhanuddin Bhai Gharyali", "Husain murtaza Fatehnagar",
-  "Taha Firoz Bhai Petlawad", "Burhanuddin Juzer Bhai Saifee",
-  "Ibrahim Aliasger Bhai Marhaba", "Qusai Mandasaur",
-  "Taha Fakhruddin Bhagat", "Mohammed Mustafa bhai Dewaswala",
-  "Burhanuddin Saleh Bhai Lakda", "Abdulqadir Haider Disa",
-  "Mohammed Primas", "Mohammed Mustafa Bhai Qudrati",
-  "Hussain Yusuf bhai kanore wala", "Ibrahim Hatim Bhai Pathari",
-  "Murtaza Raj", "Mufaddal Yusuf Bhai Motor",
-  "Hatim Abbas Bhai Kathana", "Behlul Khuzaima Saifee",
-  "Mohammed Mustafa Bhai Paghri", "Hussain Sadri",
-  "Fakhruddin murtaza bhai ezzy", "Taha Abbas Bhai Mhow"
-];
+let NAMES = [];
 
 // ------------------- Particles -------------------
 function createParticles() {
@@ -475,6 +455,19 @@ async function fetchPoints() {
   }
 }
 
+/* ---------- NEW: load names from sheet ---------- */
+async function loadNames() {
+  try {
+    const res = await fetch(`${WEB_APP_URL}?action=getNames`);
+    if (!res.ok && res.status !== 0) throw new Error('Network response was not ok');
+    const names = await res.json();
+    NAMES = Array.isArray(names) ? names : [];
+  } catch (err) {
+    console.error("Could not load names:", err);
+    NAMES = [];
+  }
+}
+
 function updateTable(data) {
   const tbody = document.getElementById("tableBody");
   tbody.innerHTML = "";
@@ -504,6 +497,7 @@ function updateTimestamp() {
 
 // ------------------- Main Load -------------------
 async function loadData() {
+  await loadNames();              // <-- load names first
   const data = await fetchPoints();
   if (data) {
     updateTable(data);
